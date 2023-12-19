@@ -1,0 +1,9 @@
+DEBUG=0
+SECRET_KEY=django-insecure-9c8+ih71z(n5zg&bk0*5$%b%k#u5n64joixb9b$5kwc+u+16_t
+ALLOWED_HOSTS=localhost 127.0.0.1 127.0.0.1:8000
+POSTGRES_ENGINE=django.db.backends.postgresql
+POSTGRES_DB=hotels_database
+POSTGRES_USER=app
+POSTGRES_PASSWORD=123qwe
+POSTGRES_HOST=rooms_db
+POSTGRES_PORT=5432

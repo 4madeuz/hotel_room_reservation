@@ -1,0 +1,77 @@
+version: '3'
+
+services:
+  rooms_app:
+    build: app
+    volumes:
+      - static_volume:/opt/app/static
+      - media_volume:/opt/app/media
+    env_file:
+      - ./.env
+    expose:
+      - "8000"
+    depends_on:
+      - rooms_db
+      - celery_worker
+
+  rooms_db:
+    image: postgres:12.0-alpine
+    volumes:
+      - pg_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    ports:
+      - "5432:5432"
+
+  nginx:
+    image: nginx:latest
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./configs:/etc/nginx/conf.d:ro
+      - ./data:/data/:ro
+      - static_volume:/opt/app/static
+      - media_volume:/opt/app/media
+    depends_on:
+      - rooms_app
+    ports:
+      - "8000:80"
+
+  redis:
+    image: "redis:latest"
+    ports:
+      - "6379:6379"
+
+  celery_worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.celery_worker
+    volumes:
+      - ./app:/opt/app
+      - static_volume:/opt/app/static
+      - media_volume:/opt/app/media
+    env_file:
+      - ./.env
+    depends_on:
+      - rooms_db
+      - redis
+
+  celery_beat:
+    build:
+      context: .
+      dockerfile: Dockerfile.celery_beat
+    volumes:
+      - ./app:/opt/app
+      - static_volume:/opt/app/static
+      - media_volume:/opt/app/media
+    env_file:
+      - ./.env
+    depends_on:
+      - rooms_db
+      - redis
+
+volumes:
+  pg_data:
+  static_volume:
+  media_volume:
